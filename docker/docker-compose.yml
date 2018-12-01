@@ -1,0 +1,36 @@
+version: "3.2"
+services:
+  dzero:
+    image: dgraph/dgraph:v1.0.10
+    volumes:
+      - "./dgraph0:/dgraph"
+    ports:
+      - 5088:5080
+      - 6088:6080
+    restart: on-failure
+    command: dgraph zero --bindall --my dzero:5080 --replicas 3
+
+  dnode1:
+    image: dgraph/dgraph:v1.0.10
+    volumes:
+      - "./dnode1:/dgraph"
+    ports:
+      - 8088:8080
+      - 9088:9080
+    expose:
+      - 9080
+      - 8080
+      - 7080
+    restart: on-failure
+    command: dgraph alpha --my dnode1:7080 --lru_mb 2048 --zero dzero:5080
+    depends_on:
+      - dzero
+
+  dnode-ui:
+    image: dgraph/dgraph:v1.0.10
+    volumes:
+      - "./dgraph-ui:/dgraph"
+    ports:
+      - 8008:8000
+    command: dgraph-ratel -addr http://localhost:8088
+  
